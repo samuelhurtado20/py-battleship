@@ -12,6 +12,7 @@ class Battleship:
             ship_coords = self._generate_ship_coords(start, end)
             ship_index = len(self.ships_data)
             self.ships_data.append({"coords": ship_coords, "hits": 0})
+
             for coord in ship_coords:
                 if coord in self.field:
                     raise ValueError("Ships cannot overlap!")
@@ -27,6 +28,7 @@ class Battleship:
         row_start, col_start = start
         row_end, col_end = end
 
+        # Validar que el barco sea una línea recta (horizontal o vertical)
         if row_start != row_end and col_start != col_end:
             raise ValueError("Ships must be straight lines!")
 
@@ -36,6 +38,7 @@ class Battleship:
                 min(col_start, col_end),
                 max(col_start, col_end) + 1
             ):
+                # Validar límites del tablero 10x10
                 if not (0 <= row <= 9 and 0 <= col <= 9):
                     raise ValueError("Ship coordinates out of bounds!")
                 coords.append((row, col))
@@ -43,6 +46,7 @@ class Battleship:
 
     def fire(self, cell: tuple[int, int]) -> str:
         row, col = cell
+        # Validar límites del disparo
         if not (0 <= row <= 9 and 0 <= col <= 9):
             return "Miss!"
 
@@ -52,6 +56,7 @@ class Battleship:
         ship_idx = self.field[cell]
         ship = self.ships_data[ship_idx]
 
+        # Solo incrementamos hits si es una celda nueva
         if cell not in self.hits:
             self.hits.add(cell)
             ship["hits"] += 1
@@ -60,6 +65,7 @@ class Battleship:
             if ship_idx not in self.sunk_ships:
                 self.sunk_ships.append(ship_idx)
             return "Sunk!"
+
         return "Hit!"
 
     def print_field(self) -> None:
