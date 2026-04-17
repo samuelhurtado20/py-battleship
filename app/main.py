@@ -13,38 +13,52 @@ class Battleship:
             ship_index = len(self.ships_data)
             self.ships_data.append({"coords": ship_coords, "hits": 0})
             for coord in ship_coords:
+                if coord in self.field:
+                    raise ValueError("Ships cannot overlap!")
                 self.field[coord] = ship_index
+
+        self._validate_field()
 
     def _generate_ship_coords(
         self,
         start: tuple[int, int],
         end: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        coords = []
         row_start, col_start = start
         row_end, col_end = end
+
+        if row_start != row_end and col_start != col_end:
+            raise ValueError("Ships must be straight lines!")
+
+        coords = []
         for row in range(min(row_start, row_end), max(row_start, row_end) + 1):
             for col in range(
                 min(col_start, col_end),
                 max(col_start, col_end) + 1
             ):
+                if not (0 <= row <= 9 and 0 <= col <= 9):
+                    raise ValueError("Ship coordinates out of bounds!")
                 coords.append((row, col))
         return coords
 
     def fire(self, cell: tuple[int, int]) -> str:
+        row, col = cell
+        if not (0 <= row <= 9 and 0 <= col <= 9):
+            return "Miss!"
+
         if cell not in self.field:
             return "Miss!"
 
-        if cell in self.hits:
-            return "Already hit!"
-
-        self.hits.add(cell)
         ship_idx = self.field[cell]
         ship = self.ships_data[ship_idx]
-        ship["hits"] += 1
+
+        if cell not in self.hits:
+            self.hits.add(cell)
+            ship["hits"] += 1
 
         if ship["hits"] == len(ship["coords"]):
-            self.sunk_ships.append(ship_idx)
+            if ship_idx not in self.sunk_ships:
+                self.sunk_ships.append(ship_idx)
             return "Sunk!"
         return "Hit!"
 
@@ -57,10 +71,8 @@ class Battleship:
                     row_str += "~ "
                 elif coord in self.hits:
                     ship_idx = self.field[coord]
-                    if ship_idx in self.sunk_ships:
-                        row_str += "x "
-                    else:
-                        row_str += "* "
+                    sym = "x " if ship_idx in self.sunk_ships else "* "
+                    row_str += sym
                 else:
                     row_str += "□ "
             print(row_str.strip())
